@@ -1,0 +1,80 @@
+{
+  "title": "a. Team name: CoderGang",
+  "outline": [
+    {
+      "level": "H1",
+      "text": "Team Details",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "a. Team name: CoderGang",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "b. Team leader name: Prasom Jain",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "c. Problem statement:",
+      "page": 1
+    },
+    {
+      "level": "H1",
+      "text": "Managing City Data Overload",
+      "page": 1
+    },
+    {
+      "level": "H2",
+      "text": "Brief about the idea",
+      "page": 2
+    },
+    {
+      "level": "H2",
+      "text": "List of features offered by the solution",
+      "page": 4
+    },
+    {
+      "level": "H2",
+      "text": "Process flow diagram or use-case diagram",
+      "page": 5
+    },
+    {
+      "level": "H2",
+      "text": "Technologies to be used in the solution",
+      "page": 6
+    },
+    {
+      "level": "H2",
+      "text": "Architecture diagram of the proposed solution",
+      "page": 7
+    },
+    {
+      "level": "H2",
+      "text": "Wireframes/Mock diagrams of the proposed solution",
+      "page": 8
+    },
+    {
+      "level": "H3",
+      "text": "View Live Dashboard",
+      "page": 8
+    },
+    {
+      "level": "H2",
+      "text": "Report an Issue",
+      "page": 8
+    },
+    {
+      "level": "H3",
+      "text": "Civic Complaint Tracker",
+      "page": 8
+    },
+    {
+      "level": "H3",
+      "text": "Report Accident",
+      "page": 8
+    }
+  ]
+}

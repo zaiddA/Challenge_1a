@@ -1,0 +1,2 @@
+pymupdf==1.22.5      # PDF parsing with font info
+numpy==1.25.0        # stats (modal font size)

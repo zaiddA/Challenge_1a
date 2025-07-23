@@ -2,14 +2,13 @@
 import os
 import re
 import json
+import argparse
 import fitz  # PyMuPDF
-import numpy as np
 from collections import Counter
 
 def detect_title(doc):
     """
-    Attempt to get title from PDF metadata; if unavailable or too short,
-    fall back to the largest-font span on page 1.
+    Get title from metadata or fall back to the largest-font span on page 1.
     """
     meta = doc.metadata.get("title", "")
     if meta and len(meta.strip()) > 5:
@@ -18,8 +17,8 @@ def detect_title(doc):
 
 def detect_title_by_font(doc):
     """
-    On page 1, find spans ≥ 3 words with the largest font size.
-    If multiple, choose the one highest on the page.
+    On page 1, find spans ≥3 words with the largest font size.
+    If multiple, pick the highest (smallest y).
     """
     page = doc[0]
     blocks = page.get_text("dict")["blocks"]
@@ -42,20 +41,18 @@ def detect_title_by_font(doc):
                     candidates.append((text, sp["bbox"][1]))
 
     if not candidates:
-        return ""  # fallback empty
-    # pick the candidate with the smallest y-coordinate (highest on page)
+        return ""
+    # pick the topmost candidate
     title = sorted(candidates, key=lambda x: x[1])[0][0]
     return title
 
 def compute_body_font_size(doc):
     """
-    Compute the most common font size (mode) across all text spans —
-    assumed to be the body text size.
+    Compute mode of all font sizes across the document (assumed body size).
     """
     sizes = []
     for page in doc:
-        blocks = page.get_text("dict")["blocks"]
-        for b in blocks:
+        for b in page.get_text("dict")["blocks"]:
             if b["type"] != 0:
                 continue
             for line in b["lines"]:
@@ -63,13 +60,11 @@ def compute_body_font_size(doc):
                     sizes.append(round(sp["size"], 1))
     if not sizes:
         return 0
-    counts = Counter(sizes)
-    return counts.most_common(1)[0][0]
+    return Counter(sizes).most_common(1)[0][0]
 
 def thresholds(body_size):
     """
-    Define heading thresholds relative to the body font size.
-    Adjust these offsets as needed for your PDF collection.
+    Heading size thresholds relative to body font size.
     """
     return {
         "H1": body_size + 3.0,
@@ -78,29 +73,26 @@ def thresholds(body_size):
 
 def assign_level(span, thr):
     """
-    Assign H1/H2/H3 based on:
-      1) absolute font-size thresholds
-      2) numbering patterns (e.g. "1.1.2" -> H3)
-      3) bold + low indent heuristics
+    Determine heading level for a span using size, numbering, and bold/indent heuristics.
     """
     text = span["text"]
     size = span["size"]
     bold = span["bold"]
     indent = span["indent"]
 
-    # 1) size-based
+    # 1) Size-based
     if thr["H1"] and size >= thr["H1"]:
         return "H1"
     if thr["H2"] and size >= thr["H2"]:
         return "H2"
 
-    # 2) numbering pattern (depth -> level)
-    num = re.match(r"^(\d+(\.\d+)+)\s+", text)
-    if num:
-        depth = num.group(1).count(".")
+    # 2) Numbering pattern
+    m = re.match(r"^(\d+(\.\d+)+)\s+", text)
+    if m:
+        depth = m.group(1).count(".")
         return {0: "H1", 1: "H2", 2: "H3"}.get(depth, "H3")
 
-    # 3) bold vs indent heuristics
+    # 3) Bold/indent heuristics
     if bold and indent < 100:
         return "H2"
     if bold:
@@ -110,20 +102,18 @@ def assign_level(span, thr):
 
 def detect_headings(doc, body_size):
     """
-    Walk through each span in page order, classify as heading or not,
-    and collect level, text, and page number.
+    Scan every text span in page order and collect headings.
     """
     thr = thresholds(body_size)
     outline = []
 
     for pno, page in enumerate(doc, start=1):
         blocks = page.get_text("dict")["blocks"]
-        # quick skip if page has no large fonts
-        # (optional optimization)
-        page_sizes = [round(sp["spans"][0]["size"],1)
-                      for b in blocks if b["type"]==0
-                      for sp in b["lines"]]
-        if page_sizes and max(page_sizes) < thr.get("H2", 0):
+        # optional skip: if no span exceeds H2 threshold, skip page
+        sizes = [round(sp["size"],1)
+                 for b in blocks if b["type"]==0
+                 for line in b["lines"] for sp in line["spans"]]
+        if sizes and max(sizes) < thr["H2"]:
             continue
 
         for b in blocks:
@@ -132,7 +122,7 @@ def detect_headings(doc, body_size):
             for line in b["lines"]:
                 for sp in line["spans"]:
                     text = sp["text"].strip()
-                    if not text:
+                    if not text or len(text) < 4:
                         continue
                     span = {
                         "text": text,
@@ -140,22 +130,14 @@ def detect_headings(doc, body_size):
                         "bold": bool(sp.get("flags", 0) & 2),
                         "indent": sp["bbox"][0]
                     }
-                    # skip very short noise
-                    if len(text) < 4:
-                        continue
                     lvl = assign_level(span, thr)
                     if lvl:
-                        outline.append({
-                            "level": lvl,
-                            "text": text,
-                            "page": pno
-                        })
+                        outline.append({"level": lvl, "text": text, "page": pno})
     return outline
 
 def extract_outline(pdf_path):
     """
-    Full pipeline for a single PDF: load, detect title, body size,
-    headings, then return dict.
+    Full pipeline: open PDF, detect title, body size, headings, return dict.
     """
     doc = fitz.open(pdf_path)
     title = detect_title(doc)
@@ -165,20 +147,41 @@ def extract_outline(pdf_path):
     return {"title": title, "outline": headings}
 
 def main():
-    inp_dir = "/app/input"
-    out_dir = "/app/output"
+    parser = argparse.ArgumentParser(description="PDF Outline Extractor")
+    parser.add_argument(
+        "-i", "--input-dir",
+        default="input",
+        help="Folder containing PDFs (default: ./input)"
+    )
+    parser.add_argument(
+        "-o", "--output-dir",
+        default="output",
+        help="Folder to write JSON files (default: ./output)"
+    )
+    parser.add_argument(
+        "-f", "--file",
+        help="(Optional) Specific PDF filename to process"
+    )
+    args = parser.parse_args()
+
+    inp_dir = args.input_dir
+    out_dir = args.output_dir
     os.makedirs(out_dir, exist_ok=True)
 
     for fname in os.listdir(inp_dir):
         if not fname.lower().endswith(".pdf"):
             continue
+        if args.file and fname != args.file:
+            continue
+
         pdf_path = os.path.join(inp_dir, fname)
         result = extract_outline(pdf_path)
-        json_name = fname[:-4] + ".json"
-        out_path = os.path.join(out_dir, json_name)
+
+        out_name = fname[:-4] + ".json"
+        out_path = os.path.join(out_dir, out_name)
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
-        print(f"Processed {fname} → {json_name}")
+        print(f"→ {fname}  →  {out_name}")
 
 if __name__ == "__main__":
     main()

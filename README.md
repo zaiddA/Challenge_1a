@@ -83,4 +83,4 @@ Welcome! This tool helps you turn any PDF into a neat, structured outline—perf
 
 ---
 
-CodePaglus - Bikash - Prason - Zaid
+CodePaglus - Bikash - Prasom - Zaid

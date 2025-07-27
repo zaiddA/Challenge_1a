@@ -83,4 +83,4 @@ Welcome! This tool helps you turn any PDF into a neat, structured outline—perf
 
 ---
 
-Happy hacking! 🚀 Feel free to tweak the code to match your PDF quirks and reach out if you need help.
+CodePaglus - Bikash - Prason - Zaid

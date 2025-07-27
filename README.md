@@ -35,11 +35,12 @@ Welcome! This tool helps you turn any PDF into a neat, structured outline—perf
 5. **Run the extractor**
 
    ```bash
-   docker run --rm \
-     -v ${PWD}/input:/app/input \
-     -v ${PWD}/output:/app/output \
-     --network none \
-     outline-extractor
+   docker run --rm `
+  -v ${PWD}\input:/app/input `
+  -v ${PWD}\output:/app/output `
+  --network none `
+  outline-extractor
+
    ```
 
 6. **Check `output/`** for `.json` files matching your PDFs.

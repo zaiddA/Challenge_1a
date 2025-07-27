@@ -1,27 +1,27 @@
-# Use a slim, official Python image on amd64
-FROM --platform=linux/amd64 python:3.10-slim
+# Use Python 3.10 slim for better performance
+FROM python:3.10-slim
 
-# Install system dependencies:
-#  - tesseract-ocr + language packs (eng, jpn, spa)
-#  - poppler-utils for pdf2image (if you choose to use it later)
-#  - libgl1 for Pillow image handling
+# Install system dependencies in one layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr \
-    tesseract-ocr-jpn \
-    tesseract-ocr-spa \
-    poppler-utils \
-    libgl1 && \
-    rm -rf /var/lib/apt/lists/*
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Set working directory
 WORKDIR /app
 
-# Copy and install Python dependencies
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the extractor script into the container
+# Copy the optimized extractor script
 COPY outline_extractor.py .
 
-# Default command: run the extractor
+# Set environment variables for better performance
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Remove the default -j 4 from ENTRYPOINT
 ENTRYPOINT ["python", "outline_extractor.py"]

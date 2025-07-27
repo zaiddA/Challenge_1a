@@ -1,24 +1,5 @@
 {
   "num_docs": 2,
-  "heading_counts": {
-    "H1": 19,
-    "H2": 2,
-    "H3": 0
-  },
-  "pages_no_heading": [
-    {
-      "doc": "file02.pdf",
-      "pages": [
-        3,
-        4,
-        5,
-        11
-      ]
-    }
-  ],
-  "languages": {
-    "file01.pdf": "en",
-    "file02.pdf": "af"
-  },
-  "avg_headings_per_doc": 10.5
+  "total_headings": 66,
+  "avg_headings_per_doc": 33.0
 }

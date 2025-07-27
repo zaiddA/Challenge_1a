@@ -1,8 +1,5 @@
 pymupdf==1.22.5      # PDF parsing with font info
 numpy==1.25.0        # stats (modal font size)
 Pillow==9.0.0
-langdetect==1.0.9
-pytesseract==0.3.10 # OCR
-transformers>=4.25.0
-torch>=1.12.0
-layoutparser[pytorch]
+
+

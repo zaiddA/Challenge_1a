@@ -36,6 +36,7 @@ You can use the `testinput` and `testoutput` folders to test the extractor witho
 
 - This will load the Python Docker image from the provided tarball, build your project image, and run it, all completely offline.
 - All PDFs in `testinput/` will be processed, and the output JSON files will be saved in `testoutput/`.
+- **Note:** The script will automatically create the `testoutput` directory (and the `thumbnails` subfolder, if needed) if they do not exist.
 - Make sure Docker is installed and running on your system.
 
 ---
@@ -60,6 +61,7 @@ For actual use, place your PDF files in the `input/` folder. The extracted outli
    ```
 
 - All PDFs in `input/` will be processed, and the output JSON files will be saved in `output/`.
+- **Note:** The script will automatically create the `output` directory (and the `thumbnails` subfolder, if needed) if they do not exist.
 - This workflow is also fully offline and uses the same Docker image.
 
 ---

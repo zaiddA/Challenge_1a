@@ -1,123 +1,71 @@
-# PDF Outline Extractor
+# PDF Outline Extractor - Offline Usage Guide
 
-This tool converts PDFs into structured outlines (JSON), extracting titles and headings for easy navigation and downstream processing.
+## 📥 Cloning the Repository
 
----
+Before running any steps, clone this repository to your local machine:
 
-## Features
-
-- **Title Extraction**: Uses PDF metadata or the largest text on page 1.
-- **Heading Detection**: Identifies H1, H2, H3 using font size, numbering, and layout cues.
-- **Fast**: Processes up to 50 pages in under 10 seconds (CPU-only).
-- **Dockerized**: Fully containerized, no internet required.
-
----
-
-## Quick Start
-
-### 1. Clone the Repository
-
-```bash
-git clone <your_repo_url>
-cd <your_repo_directory>
-```
-
-### 2. Prepare Input/Output Folders
-
-```bash
-mkdir input output
-```
-
-Place your PDF files in the `input/` directory.
-
----
-
-## Option 1: Run with Docker
-
-### 3. Build the Docker Image
-
-```bash
-docker build --platform=linux/amd64 -t outline-extractor .
-```
-
-### 4. Run the Extractor
-
-```bash
-docker run --rm \
-  -v "${PWD}/input:/app/input" \
-  -v "${PWD}/output:/app/output" \
-  --network none \
-  outline-extractor
-```
-
-- Output JSON files will appear in `output/` with the same base name as your PDFs.
-
----
-
-## Option 2: Run Locally (No Docker)
-
-### 3. Install Python 3.10+ and Dependencies
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 4. Run the Extractor
-
-```bash
-python outline_extractor.py -i input -o output
-```
-
-#### Optional Flags
-
-- `-j 0` — Use all CPU cores for parallel processing.
-- `-t` — Generate thumbnails for each PDF (saved in `output/thumbnails/`).
-- `--thumb-size W H` — Set thumbnail size (default: 300 400).
-
-**Example:**
-
-```bash
-python outline_extractor.py -i input -o output -j 0 -t --thumb-size 400 600
+```powershell
+git clone https://github.com/zaiddA/Challenge_1a.git
+cd Challenge_1a
 ```
 
 ---
 
-## Output
-
-- For each PDF, a `.json` file is created in `output/`:
-  ```json
-  {
-    "source_file": "sample.pdf",
-    "title": "Document Title",
-    "outline": [
-      { "level": "H1", "text": "Introduction", "page": 1 },
-      { "level": "H2", "text": "Background", "page": 2 },
-      { "level": "H3", "text": "History", "page": 3 }
-    ],
-    "thumbnail": "thumbnails/sample.jpg" // if -t used
-  }
-  ```
-- A summary `stats.json` is also generated.
+This tool extracts structured outlines from PDF files using a fully offline, Dockerized workflow. You can use either the main input/output folders or dedicated test folders for your experiments.
 
 ---
 
-## Troubleshooting
+## 🧪 Running with Test Input/Output Folders
 
-- Ensure your PDFs are in the `input/` folder.
-- If you encounter missing dependencies, re-run `pip install -r requirements.txt`.
-- For large PDFs or slow performance, try running with `-j 0` for parallel processing.
+You can use the `testinput` and `testoutput` folders to test the extractor without affecting your main data. Place your sample PDF files in `testinput/` and the results will appear in `testoutput/`.
+
+**Steps:**
+
+1. Open PowerShell and navigate to the `Challenge_1a` directory:
+
+   ```powershell
+   cd path\to\Challenge_1a
+   ```
+
+2. Run these commands one by one:
+   ```powershell
+   docker load -i .\python_3.10-slim.tar.gz
+   docker build -t challenge1a .
+   docker run --rm -v "${PWD}\testinput:/app/input" -v "${PWD}\testoutput:/app/output" challenge1a
+   ```
+
+- This will load the Python Docker image from the provided tarball, build your project image, and run it, all completely offline.
+- All PDFs in `testinput/` will be processed, and the output JSON files will be saved in `testoutput/`.
+- Make sure Docker is installed and running on your system.
 
 ---
 
-## Customization
+## 📂 Running with Main Input/Output Folders
 
-- Adjust heading detection thresholds in `outline_extractor.py` if your PDFs use unusual font sizes or layouts.
+For actual use, place your PDF files in the `input/` folder. The extracted outlines will be saved in the `output/` folder.
+
+**Steps:**
+
+1. Open PowerShell and navigate to the `Challenge_1a` directory:
+
+   ```powershell
+   cd path\to\Challenge_1a
+   ```
+
+2. Run these commands one by one:
+   ```powershell
+   docker load -i .\python_3.10-slim.tar.gz
+   docker build -t challenge1a .
+   docker run --rm -v "${PWD}\input:/app/input" -v "${PWD}\output:/app/output" challenge1a
+   ```
+
+- All PDFs in `input/` will be processed, and the output JSON files will be saved in `output/`.
+- This workflow is also fully offline and uses the same Docker image.
 
 ---
 
-## License
+## ℹ️ Notes
 
-MIT
+- You can create the `testinput`, `testoutput`, `input`, and `output` folders if they do not already exist.
+- The Docker image is loaded from the provided `python_3.10-slim.tar.gz` file, so no internet connection is required.
+- If you want to switch between test and main folders, just change the `-v` (volume) arguments in the `docker run` command as shown above.

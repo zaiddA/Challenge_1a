@@ -1,86 +1,123 @@
-# PDF Outline Extractor for Adobe Hackathon Round 1A
+# PDF Outline Extractor
 
-Welcome! This tool helps you turn any PDF into a neat, structured outline—perfect for quick navigation and downstream processing in your hackathon project.
-
-## ✨ What It Does
-
-* **Title Discovery**: Grabs the title from PDF metadata or finds the biggest text on page 1.
-* **Heading Detection**: Spots H1, H2, and H3 headings using font sizes, numbering (e.g., "1.2"), and simple layout cues.
-* **Blazing Fast**: Processes up to 50 pages in under 10 seconds on a CPU-only setup.
-* **Dockerized**: Package everything in a small (< 200 MB) Docker container. No internet needed.
-
-## 🚀 Getting Started
-
-1. **Clone this repo**
-
-   ```bash
-   git clone git@github.com:your_org/your_repo.git
-   cd your_repo
-   ```
-
-2. **Make folders**
-
-   ```bash
-   mkdir input output
-   ```
-
-3. **Drop PDFs** into `input/` (e.g., `sample.pdf`).
-
-4. **Build the Docker image**
-
-   ```bash
-   docker build --platform=linux/amd64 -t outline-extractor .
-   ```
-
-5. **Run the extractor**
-
-   ```bash
-   docker run --rm `
-  -v ${PWD}\input:/app/input `
-  -v ${PWD}\output:/app/output `
-  --network none `
-  outline-extractor
-
-   ```
-
-6. **Check `output/`** for `.json` files matching your PDFs.
-
-## 🔍 How It Works (Under the Hood)
-
-1. **Title Detection**
-
-   * Tries PDF metadata first.
-   * If missing, picks the largest-font text block on page 1.
-
-2. **Finding the Body Font Size**
-
-   * Scans all pages to find the most common font size (the body text size).
-
-3. **Heading Levels**
-
-   * **H1**: Any span ≥ body + 3 pt.
-   * **H2**: Any span ≥ body + 1.5 pt.
-   * **H3**: Derived from numbering patterns (e.g., “2.1.3”) or bold/indent cues.
-
-4. **Output JSON**
-
-   ```json
-   {
-     "title": "<your title>",
-     "outline": [
-       { "level": "H1", "text": "Introduction", "page": 1 },
-       { "level": "H2", "text": "Background", "page": 2 },
-       { "level": "H3", "text": "History", "page": 3 }
-     ]
-   }
-   ```
-
-## 🛠️ Tips & Tricks
-
-* **Customize thresholds** in `outline_extractor.py` if your PDFs use unusual font sizing.
-* **Test different PDFs**: multi-column layouts, no metadata, etc.
-* **Performance**: If you hit > 10 s on large docs, add early-exit skips for pages without big fonts.
+This tool converts PDFs into structured outlines (JSON), extracting titles and headings for easy navigation and downstream processing.
 
 ---
 
-CodePaglus - Bikash - Prasom - Zaid
+## Features
+
+- **Title Extraction**: Uses PDF metadata or the largest text on page 1.
+- **Heading Detection**: Identifies H1, H2, H3 using font size, numbering, and layout cues.
+- **Fast**: Processes up to 50 pages in under 10 seconds (CPU-only).
+- **Dockerized**: Fully containerized, no internet required.
+
+---
+
+## Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone <your_repo_url>
+cd <your_repo_directory>
+```
+
+### 2. Prepare Input/Output Folders
+
+```bash
+mkdir input output
+```
+
+Place your PDF files in the `input/` directory.
+
+---
+
+## Option 1: Run with Docker
+
+### 3. Build the Docker Image
+
+```bash
+docker build --platform=linux/amd64 -t outline-extractor .
+```
+
+### 4. Run the Extractor
+
+```bash
+docker run --rm \
+  -v "${PWD}/input:/app/input" \
+  -v "${PWD}/output:/app/output" \
+  --network none \
+  outline-extractor
+```
+
+- Output JSON files will appear in `output/` with the same base name as your PDFs.
+
+---
+
+## Option 2: Run Locally (No Docker)
+
+### 3. Install Python 3.10+ and Dependencies
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. Run the Extractor
+
+```bash
+python outline_extractor.py -i input -o output
+```
+
+#### Optional Flags
+
+- `-j 0` — Use all CPU cores for parallel processing.
+- `-t` — Generate thumbnails for each PDF (saved in `output/thumbnails/`).
+- `--thumb-size W H` — Set thumbnail size (default: 300 400).
+
+**Example:**
+
+```bash
+python outline_extractor.py -i input -o output -j 0 -t --thumb-size 400 600
+```
+
+---
+
+## Output
+
+- For each PDF, a `.json` file is created in `output/`:
+  ```json
+  {
+    "source_file": "sample.pdf",
+    "title": "Document Title",
+    "outline": [
+      { "level": "H1", "text": "Introduction", "page": 1 },
+      { "level": "H2", "text": "Background", "page": 2 },
+      { "level": "H3", "text": "History", "page": 3 }
+    ],
+    "thumbnail": "thumbnails/sample.jpg" // if -t used
+  }
+  ```
+- A summary `stats.json` is also generated.
+
+---
+
+## Troubleshooting
+
+- Ensure your PDFs are in the `input/` folder.
+- If you encounter missing dependencies, re-run `pip install -r requirements.txt`.
+- For large PDFs or slow performance, try running with `-j 0` for parallel processing.
+
+---
+
+## Customization
+
+- Adjust heading detection thresholds in `outline_extractor.py` if your PDFs use unusual font sizes or layouts.
+
+---
+
+## License
+
+MIT

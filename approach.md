@@ -142,7 +142,7 @@ All will be processed in a single run
   "outline": [
     { "level": "H1", "text": "[Citation Needed]", "page": 3 },
     { "level": "H2", "text": "Boring Legal Fine Print", "page": 4 }
-    // ...
+    
   ]
 }
 ```

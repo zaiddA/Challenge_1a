@@ -1,3 +1,5 @@
+*this project was our official submission to the Adobe Hackathon 2025
+
 # PDF Outline Extractor - Offline Usage Guide
 
 # ADOBE-1A
@@ -73,3 +75,4 @@ For actual use, place your PDF files in the `input/` folder. The extracted outli
 - You can create the `testinput`, `testoutput`, `input`, and `output` folders if they do not already exist.
 - The Docker image is loaded from the provided `python_3.10-slim.tar.gz` file, so no internet connection is required.
 - If you want to switch between test and main folders, just change the `-v` (volume) arguments in the `docker run` command as shown above.
+
